@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NiuBi (NB) Whitepaper v1.0</title>
+<style>
+  :root {
+    --ink: #14161c;
+    --muted: #5b6472;
+    --accent: #C97F00;
+    --rule: #e3e6ec;
+    --soft: #f7f8fa;
+  }
+  @page { size: A4; margin: 18mm 16mm; }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page { max-width: 820px; margin: 0 auto; padding: 40px 32px 64px; }
+
+  /* Cover */
+  .cover {
+    text-align: center;
+    padding: 46px 0 40px;
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 36px;
+  }
+  .cover img { width: 96px; height: 96px; object-fit: contain; margin-bottom: 18px; }
+  .cover h1 { font-size: 30pt; letter-spacing: -0.5px; margin: 0 0 6px; }
+  .cover .sub { color: var(--accent); font-size: 12pt; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+  .cover .meta { color: var(--muted); font-size: 9.5pt; margin-top: 16px; }
+
+  h2 {
+    font-size: 14pt;
+    margin: 30px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+    page-break-after: avoid;
+  }
+  h3 { font-size: 11pt; margin: 18px 0 6px; page-break-after: avoid; }
+  p { margin: 0 0 10px; }
+  ul, ol { margin: 0 0 12px; padding-left: 20px; }
+  li { margin-bottom: 5px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td { border: 1px solid var(--rule); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  code {
+    font-family: Consolas, "SF Mono", monospace;
+    font-size: 9pt;
+    background: var(--soft);
+    padding: 1px 5px;
+    border-radius: 3px;
+    word-break: break-all;
+  }
+
+  .callout {
+    background: var(--soft);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    margin: 14px 0 18px;
+    font-size: 9.8pt;
+  }
+
+  .addr {
+    display: block;
+    font-family: Consolas, "SF Mono", monospace;
+    font-size: 9pt;
+    background: var(--soft);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 8px 10px;
+    word-break: break-all;
+    margin: 6px 0 14px;
+  }
+
+  .footer-note {
+    margin-top: 34px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 8.5pt;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="cover">
+    <img src="assets/NB_logo1012.png" alt="NiuBi (NB) logo">
+    <h1>NiuBi (NB)</h1>
+    <div class="sub">Whitepaper</div>
+    <div class="meta">Version 1.0 &nbsp;·&nbsp; BEP-20 Token on BNB Smart Chain &nbsp;·&nbsp; October 2026</div>
+  </div>
+
+  <h2>Abstract</h2>
+  <p>
+    NiuBi (NB) is a BEP-20 token deployed on BNB Smart Chain. The protocol embeds its entire
+    economic policy inside the smart contract: a 6% buy tax and a 10% sell tax are split
+    between marketing, automatic liquidity provision, automatic token burn and BNB dividends
+    for holders. Additional protections — anti-whale limits and a trade cooldown — are enforced
+    on-chain and cannot be bypassed by users.
+  </p>
+  <p>
+    The contract source code is publicly verified on BscScan, all taxes are hard-coded at
+    deployment, and the PancakeSwap liquidity provider (LP) tokens have been sent to the dead
+    address, making the initial liquidity permanently irremovable.
+  </p>
+
+  <h2>1. Introduction</h2>
+  <p>
+    Most tokens launched on decentralized exchanges fail their earliest buyers for the same
+    reasons: liquidity is pulled without warning, tax rules change after purchase, or a few
+    wallets accumulate enough supply to move the price at will. NiuBi was designed around
+    contract-level constraints that remove the ability for anyone — including the deployer —
+    to break these rules silently.
+  </p>
+  <p>The design goals of NiuBi are:</p>
+  <ul>
+    <li><strong>Predictability.</strong> Fee structure and limits are fixed in the contract and visible to everyone before purchase.</li>
+    <li><strong>Permanent liquidity.</strong> LP tokens are burned, so exiting liquidity can never be used as an exit scam.</li>
+    <li><strong>Aligned incentives.</strong> Every trade simultaneously funds liquidity, reduces supply and rewards holders.</li>
+    <li><strong>Bot resistance.</strong> Sniping and sandwich attacks are mitigated through a cooldown and transaction caps.</li>
+  </ul>
+
+  <h2>2. Token Overview</h2>
+  <table>
+    <tr><th style="width:34%">Parameter</th><th>Value</th></tr>
+    <tr><td>Token name</td><td>NiuBi</td></tr>
+    <tr><td>Symbol</td><td>NB</td></tr>
+    <tr><td>Blockchain</td><td>BNB Smart Chain (BSC), Chain ID 56</td></tr>
+    <tr><td>Token standard</td><td>BEP-20</td></tr>
+    <tr><td>Decimals</td><td>18</td></tr>
+    <tr><td>Total supply</td><td>1,000,000,000 NB (fixed at deployment)</td></tr>
+    <tr><td>Contract address</td><td><code>0xa9A69321F5fB01858702eF4Ae6d73364c3aa2148</code></td></tr>
+    <tr><td>Primary DEX</td><td>PancakeSwap V2 (NB / BNB pair)</td></tr>
+    <tr><td>Router</td><td><code>0x10ED43C718714eb63d5aA57B78B54704E256024E</code></td></tr>
+    <tr><td>Source code</td><td>Verified on BscScan</td></tr>
+    <tr><td>Liquidity status</td><td>LP tokens burned to <code>0x...dEaD</code></td></tr>
+  </table>
+
+  <h2>3. Tokenomics</h2>
+  <p>
+    Total supply is fixed at 1,000,000,000 NB. There is no mint function, no inflation and no
+    hidden treasury allocation controlled by the deployer. Circulating supply only decreases
+    over time, because part of every transaction is burned.
+  </p>
+
+  <h3>3.1 Buy Tax — 6%</h3>
+  <table>
+    <tr><th>Allocation</th><th>Rate</th><th>Function</th></tr>
+    <tr><td>Marketing</td><td class="num">2.5%</td><td>Project operations and promotion</td></tr>
+    <tr><td>Liquidity</td><td class="num">2.0%</td><td>Automatically added to the NB/BNB pool</td></tr>
+    <tr><td>Burn</td><td class="num">1.0%</td><td>Sent to the dead address permanently</td></tr>
+    <tr><td>Dividend</td><td class="num">0.5%</td><td>Redistributed to holders in BNB</td></tr>
+    <tr><th>Total</th><th class="num">6.0%</th><td></td></tr>
+  </table>
+
+  <h3>3.2 Sell Tax — 10%</h3>
+  <table>
+    <tr><th>Allocation</th><th>Rate</th><th>Function</th></tr>
+    <tr><td>Marketing</td><td class="num">4.5%</td><td>Project operations and promotion</td></tr>
+    <tr><td>Liquidity</td><td class="num">3.0%</td><td>Automatically added to the NB/BNB pool</td></tr>
+    <tr><td>Burn</td><td class="num">2.0%</td><td>Sent to the dead address permanently</td></tr>
+    <tr><td>Dividend</td><td class="num">0.5%</td><td>Redistributed to holders in BNB</td></tr>
+    <tr><th>Total</th><th class="num">10.0%</th><td></td></tr>
+  </table>
+
+  <div class="callout">
+    The contract owner, the liquidity pair and the dead address are excluded from fees, limits
+    and dividends. These exclusions are written in the constructor and cannot be altered
+    afterwards.
+  </div>
+
+  <h3>3.3 Trading Limits</h3>
+  <table>
+    <tr><th>Limit</th><th>Value</th><th>Share of supply</th></tr>
+    <tr><td>Maximum transaction</td><td>5,000,000 NB</td><td class="num">0.5%</td></tr>
+    <tr><td>Maximum wallet holding</td><td>15,000,000 NB</td><td class="num">1.5%</td></tr>
+    <tr><td>Swap-and-liquify threshold</td><td>1,000,000 NB</td><td class="num">0.1%</td></tr>
+    <tr><td>Trade cooldown</td><td>60 seconds</td><td class="num">—</td></tr>
+  </table>
+
+  <h2>4. Protocol Mechanics</h2>
+
+  <h3>4.1 Automatic Liquidity</h3>
+  <p>
+    When the accumulated liquidity allocation reaches the swap threshold, the contract sells
+    half of that amount for BNB and pairs the remainder with it, adding the resulting liquidity
+    to PancakeSwap. This continuously deepens the pool without any manual intervention and
+    without withdrawing value from the pool.
+  </p>
+
+  <h3>4.2 Automatic Burn</h3>
+  <p>
+    The burn allocation of every qualifying transaction is transferred to
+    <code>0x000000000000000000000000000000000000dEaD</code>. Burned tokens are removed from
+    circulation permanently and can never be recovered by any party.
+  </p>
+
+  <h3>4.3 Holder Dividends</h3>
+  <p>
+    The dividend allocation is accumulated and distributed in BNB to all eligible holders using
+    a proportional accumulator (the same model popularised by reflection-style tokens). A
+    holder's claim grows with both the dividend volume generated by trading and the size of
+    their balance. No staking, locking or claim transaction is required.
+  </p>
+
+  <h3>4.4 Anti-Whale and Anti-Bot</h3>
+  <p>
+    Every wallet is subject to the transaction and holding caps listed in section 3.3. During
+    the launch period, a 60-second cooldown between transfers from the same wallet prevents
+    high-frequency sniping and automated sandwich strategies. These limits are enforced inside
+    <code>_transfer</code>, so they apply equally to all non-excluded addresses.
+  </p>
+
+  <h3>4.5 Permanent Liquidity Lock</h3>
+  <p>
+    The PancakeSwap LP tokens received when liquidity was created were transferred to the dead
+    address. As a result, no address holds the LP position and liquidity can never be removed —
+    the pool remains tradable for as long as BNB Smart Chain exists.
+  </p>
+
+  <h2>5. Security and Transparency</h2>
+  <ul>
+    <li><strong>Verified source code.</strong> The full Solidity source is published and verified on BscScan, allowing anyone to audit the tax logic, limits and ownership functions.</li>
+    <li><strong>Fixed parameters.</strong> Buy and sell tax rates are set at deployment; they are not exposed through an owner-adjustable setter.</li>
+    <li><strong>No minting.</strong> Total supply cannot be increased after deployment.</li>
+    <li><strong>Burn-only treasury.</strong> The project holds no privileged token allocation beyond the owner's publicly visible wallet balance.</li>
+    <li><strong>On-chain verification.</strong> Tradability was enabled by a public transaction, and every state change is observable on BscScan.</li>
+  </ul>
+
+  <h2>6. Roadmap</h2>
+  <table>
+    <tr><th style="width:22%">Phase</th><th>Scope</th><th style="width:18%">Status</th></tr>
+    <tr>
+      <td>Phase 1<br>Foundation</td>
+      <td>Contract development and deployment, source verification, PancakeSwap liquidity creation, LP burn</td>
+      <td>Completed</td>
+    </tr>
+    <tr>
+      <td>Phase 2<br>Visibility</td>
+      <td>Official website, whitepaper, English documentation, BscScan token information and logo update, community channels</td>
+      <td>In progress</td>
+    </tr>
+    <tr>
+      <td>Phase 3<br>Discovery</td>
+      <td>Listings on token data aggregators (CoinGecko, CoinMarketCap), broader community growth and content marketing</td>
+      <td>Planned</td>
+    </tr>
+    <tr>
+      <td>Phase 4<br>Expansion</td>
+      <td>Additional utility and ecosystem features, prioritised through community discussion</td>
+      <td>Planned</td>
+    </tr>
+  </table>
+  <p style="font-size:9pt;color:var(--muted)">
+    Roadmap items describe intentions, not guarantees. Timelines depend on community growth,
+    market conditions and the outcome of third-party listing reviews.
+  </p>
+
+  <h2>7. How to Acquire NB</h2>
+  <ol>
+    <li>Install a BNB Smart Chain compatible wallet such as MetaMask and fund it with BNB.</li>
+    <li>Switch the wallet network to BNB Smart Chain mainnet (Chain ID 56).</li>
+    <li>Open PancakeSwap and import the NB contract address as the output token.</li>
+    <li>Set slippage to 8% or higher for buys and 12% or higher for sells, then confirm the swap.</li>
+  </ol>
+  <p>Contract address for import:</p>
+  <span class="addr">0xa9A69321F5fB01858702eF4Ae6d73364c3aa2148</span>
+
+  <h2>8. Risk Disclosure</h2>
+  <p>
+    NiuBi is a decentralized, community-oriented token with no venture capital backing, no
+    guaranteed revenue model and no expectation of profit derived from the efforts of others.
+    Before interacting with the contract, readers should understand the following risks:
+  </p>
+  <ul>
+    <li><strong>Market risk.</strong> The price of NB is determined entirely by supply and demand on decentralized exchanges and may fall to zero.</li>
+    <li><strong>Liquidity risk.</strong> Although the initial LP position is burned, a small pool produces high slippage and volatility; large orders may not be executable at a fair price.</li>
+    <li><strong>Smart contract risk.</strong> Despite verification and review, undiscovered defects or unexpected interactions with third-party protocols remain possible.</li>
+    <li><strong>Tax risk.</strong> A 6% buy tax and a 10% sell tax apply to every trade. These amounts are permanently deducted and must be accounted for before trading.</li>
+    <li><strong>Regulatory risk.</strong> The legal treatment of digital assets differs by jurisdiction and may change without notice.</li>
+    <li><strong>No recourse.</strong> Blockchain transactions are irreversible. Lost funds, mistyped addresses and failed transactions cannot be reversed by the project or by anyone else.</li>
+  </ul>
+  <p>
+    Nothing in this document is investment advice, a solicitation, or an offer to sell securities
+    in any jurisdiction. Every reader is responsible for their own due diligence and for
+    compliance with the laws that apply to them.
+  </p>
+
+  <h2>9. Official Links</h2>
+  <table>
+    <tr><th style="width:28%">Resource</th><th>Link</th></tr>
+    <tr><td>Website</td><td><a href="https://xingkong0033.github.io/niubi-website/">xingkong0033.github.io/niubi-website</a></td></tr>
+    <tr><td>BscScan</td><td><a href="https://bscscan.com/token/0xa9A69321F5fB01858702eF4Ae6d73364c3aa2148">bscscan.com/token/0xa9A69321F5fB01858702eF4Ae6d73364c3aa2148</a></td></tr>
+    <tr><td>PancakeSwap</td><td><a href="https://pancakeswap.finance/swap?inputCurrency=BNB&amp;outputCurrency=0xa9A69321F5fB01858702eF4Ae6d73364c3aa2148">Buy NB on PancakeSwap</a></td></tr>
+  </table>
+
+  <div class="footer-note">
+    NiuBi (NB) Whitepaper · Version 1.0 · October 2026<br>
+    Contract: 0xa9A69321F5fB01858702eF4Ae6d73364c3aa2148 · BNB Smart Chain · BEP-20<br>
+    This document is provided for informational purposes only.
+  </div>
+
+</div>
+</body>
+</html>
